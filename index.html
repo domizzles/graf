@@ -40,7 +40,10 @@
             </div>
 
             <div class="panel panel-default" style="width: 95%;margin-left: auto;margin-right: auto;">
-                <div id="chartDiv" class="panel-body" style="word-wrap: break-word;">
+                <div id="chartDiv" class="panel-body" style="word-wrap: break-word; display: none;">
+                </div>
+                <div id="loadingDiv" style="text-align: center;height: 200px;">
+                    <img src="http://www.mytreedb.com/uploads/mytreedb/loader/ajax_loader_blue_512.gif" style="width: 5%; margin-top: 95px;">
                 </div>
             </div>
         </div>
@@ -119,6 +122,8 @@
                             array.forEach(function (workout) {
                                 $('#' + workout.username).html($('#' + workout.username).html() + '<h3 style="display: inline-block; color: green;">&nbsp;<span class="glyphicon glyphicon-ok" aria-hidden="true"></span></h3>');
                             });
+                            $('#loadingDiv').css('display', 'none');
+                            $('#chartDiv').css('display', 'table');
                         }
                     });
                 }
