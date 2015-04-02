@@ -11,7 +11,7 @@ app.use(bodyParser.json());
 app.use(cookieParser(process.env.SESSION_KEY || 'SECRETKEY'));
 app.use(cookieSession({
     secret: process.env.SESSION_KEY || 'SECRETKEY',
-    cookie: {}
+    cookie: { maxAge: 432000000}
 }));
 
 app.get('/', function (req, res) {
