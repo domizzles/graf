@@ -112,9 +112,7 @@ app.get('/c', function (req, res) {
     res.send(req.session);
 });
 
-var server = app.listen(3000, function () {
-    console.log('Example app listening at http://localhost:3000');
-});
+app.listen(process.env.PORT);
 
 //passport
 //implement login route (get and post)
