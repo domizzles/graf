@@ -11,9 +11,8 @@ app.use(bodyParser.json());
 app.use(cookieParser(process.env.SESSION_KEY || 'SECRETKEY'));
 app.use(cookieSession({
     secret: process.env.SESSION_KEY || 'SECRETKEY',
-    cookie: {
-        maxAge: 1000*60*60
-}}));
+    cookie: {}
+}));
 
 app.get('/', function (req, res) {
     var name = req.session.name;
@@ -49,7 +48,6 @@ app.get('/style', function (req, res) {
     res.sendFile(__dirname + '/style.css');
 });
 
-
 app.get('/u', function (req, res) {
     MongoClient.connect(credentials.host, function (err, client) {
         if (err) res.send(err);
@@ -71,12 +69,30 @@ app.get('/u', function (req, res) {
     });
 });
 
+app.post('/u', function (req, res) {
+    MongoClient.connect(credentials.host, function (err, client) {
+        if (err) res.send(err);
+        if (req.body.username && req.session.group) {
+            client.collection('grafusers').insert({username: req.body.username.toLowerCase(), group: req.session.group}, function (err, result) {
+                res.send(result);
+                client.close();
+            });
+        } else {
+            client.close();
+            res.send('No data.');
+        }
+    });
+});
+
 app.get('/w', function (req, res) {
     MongoClient.connect(credentials.host, function (err, client) {
         if (err) res.send(err);
 
         if (req.query.username && req.query.username instanceof Array) {
-            client.collection('grafworkouts').find({username: {$in: req.query.username}}).toArray(function (err, result) {
+            client.collection('grafworkouts').find({
+                username: {$in: req.query.username},
+                date: {$gte: new Date(new Date() - 604800000)}
+            }).toArray(function (err, result) {
                 res.send(result);
                 client.close();
             });
