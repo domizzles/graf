@@ -73,9 +73,18 @@ app.post('/u', function (req, res) {
     MongoClient.connect(credentials.host, function (err, client) {
         if (err) res.send(err);
         if (req.body.username && req.session.group) {
-            client.collection('grafusers').insert({username: req.body.username.toLowerCase(), group: req.session.group}, function (err, result) {
-                res.send(result);
-                client.close();
+            client.collection('grafusers').find({username: req.body.username}).toArray(function (err, result) {
+                if (err) res.send(err);
+
+                if (!result[0]) {
+                    client.collection('grafusers').insert({username: req.body.username.toLowerCase(), group: req.session.group}, function (err, new_user) {
+                        res.send(new_user);
+                        client.close();
+                    });
+                } else {
+                    client.close();
+                    res.send({error: 'username taken'})
+                }
             });
         } else {
             client.close();
