@@ -30,8 +30,13 @@
                         <span class="label label-success" id="groupname"></span>
                         <span class="label label-info" id="username"></span>
                     </div>
-                    <div class="col-md-6 col-xs-6">&nbsp;</div>
-                    <div style="display:inline-block; text-align:right;" class="col-md-3 col-xs-3">
+                    <div class="col-md-5 col-xs-5">&nbsp;</div>
+                    <div style="display:inline-block; text-align:right;" class="col-md-2 col-xs-2">
+                        <button id="subWorkout" disable="true" type="button" class="btn btn-danger" aria-expanded="false">
+                            <span class="glyphicon glyphicon-minus" aria-hidden="true"></span>
+                        </button>
+                    </div>
+                    <div style="display:inline-block; text-align:right;" class="col-md-1 col-xs-1">
                         <button id="addWorkout" disable="true" type="button" class="btn btn-primary" aria-expanded="false">
                             <span class="glyphicon glyphicon-plus" aria-hidden="true"></span>
                         </button>
@@ -79,6 +84,19 @@
             },
             success: function (json) {
                 $('#' + session.name).html($('#' + session.name).html() + '<h3 style="display: inline-block; color: green;">&nbsp;<span class="glyphicon glyphicon-ok" aria-hidden="true"></span></h3>');
+            }
+        });
+    });
+
+    $('#subWorkout').click(function () {
+        $.ajax({
+            method: "DELETE",
+            url: '/w',
+            data: {
+                username: session.name,
+            },
+            success: function (json) {
+                location.reload();
             }
         });
     });
