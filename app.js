@@ -124,6 +124,34 @@ app.post('/w', function (req, res) {
     });
 });
 
+app.delete('/w', function (req, res) {
+    MongoClient.connect(credentials.host, function (err, client) {
+        if (err) res.send(err);
+
+        if (req.body.username) {
+            var grafworkouts = client.collection('grafworkouts');
+            grafworkouts.find({
+                username: req.body.username
+            }).sort({date: -1}).limit(1).toArray(function (err, result) {
+                if (err) res.send(err);
+
+                console.log(result[0]._id);
+
+                grafworkouts.remove({_id: result[0]._id}, function (error, returned) {
+                    if (error) res.send(error);
+
+                    console.log(result);
+                    res.send(result);
+                    client.close();
+                });
+            });
+        } else {
+            client.close();
+            res.send({});
+        }
+    });
+});
+
 app.get('/c', function (req, res) {
     res.send(req.session);
 });
