@@ -2,6 +2,7 @@ var express = require('express');
 var bodyParser = require('body-parser')
 var cookieParser = require('cookie-parser');
 var cookieSession = require('cookie-session');
+var moment = require('moment');
 var MongoClient = require('mongodb').MongoClient;
 var app = express();
 var credentials = require('./credentials.json')
@@ -73,9 +74,18 @@ app.post('/u', function (req, res) {
     MongoClient.connect(credentials.host, function (err, client) {
         if (err) res.send(err);
         if (req.body.username && req.session.group) {
-            client.collection('grafusers').insert({username: req.body.username.toLowerCase(), group: req.session.group}, function (err, result) {
-                res.send(result);
-                client.close();
+            client.collection('grafusers').find({username: req.body.username}).toArray(function (err, result) {
+                if (err) res.send(err);
+
+                if (!result[0]) {
+                    client.collection('grafusers').insert({username: req.body.username.toLowerCase(), group: req.session.group}, function (err, new_user) {
+                        res.send(new_user);
+                        client.close();
+                    });
+                } else {
+                    client.close();
+                    res.send({error: 'username taken'})
+                }
             });
         } else {
             client.close();
@@ -88,22 +98,21 @@ app.get('/w', function (req, res) {
     MongoClient.connect(credentials.host, function (err, client) {
         if (err) res.send(err);
 
-        if (req.query.username && req.query.username instanceof Array) {
-            client.collection('grafworkouts').find({
-                username: {$in: req.query.username},
-                date: {$gte: new Date(new Date() - 604800000)}
-            }).toArray(function (err, result) {
-                res.send(result);
-                client.close();
-            });
-        } else if (req.query.username) {
-            client.collection('grafworkouts').find({username: req.query.username}).toArray(function (err, result) {
-                res.send(result);
-                client.close();
-            });
-        } else {
+        var filter_obj = {};
+
+        if (req.query.username && req.query.username instanceof Array) filter_obj.username = {$in: req.query.username};
+        else if (req.query.username) filter_obj.username = req.query.username;
+
+        filter_obj.date = {$gte: moment().day(-7).toDate()};
+
+        if (!req.query.username) {
             client.close();
             res.send({});
+        } else {
+            client.collection('grafworkouts').find(filter_obj).toArray(function (err, result) {
+                res.send(result);
+                client.close();
+            });
         }
     });
 });

@@ -107,11 +107,12 @@
             method: "POST",
             url: '/u',
             data: {
-                username: newUser,
-                group: session.group
+                username: newUser.toLowerCase(),
+                group: session.group.toLowerCase()
             },
             success: function (json) {
-                location.reload();
+                if (json.error) alert(newUser + ' ' + json.error);
+                else location.reload();
             }
         });
     });
