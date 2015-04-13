@@ -103,17 +103,12 @@ app.get('/w', function (req, res) {
         if (req.query.username && req.query.username instanceof Array) filter_obj.username = {$in: req.query.username};
         else if (req.query.username) filter_obj.username = req.query.username;
 
-        filter_obj.date = {$gte: moment().day(-7).toDate()};
+        if (req.query.date) filter_obj.date = {$gte: moment(req.query.date).toDate()};
 
-        if (!req.query.username) {
+        client.collection('grafworkouts').find(filter_obj).toArray(function (err, result) {
+            res.send(result);
             client.close();
-            res.send({});
-        } else {
-            client.collection('grafworkouts').find(filter_obj).toArray(function (err, result) {
-                res.send(result);
-                client.close();
-            });
-        }
+        });
     });
 });
 
@@ -166,8 +161,3 @@ app.get('/c', function (req, res) {
 });
 
 app.listen(process.env.PORT);
-
-//passport
-//implement login route (get and post)
-//implement logout route (post)
-//nvd3 graphs
