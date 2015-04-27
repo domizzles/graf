@@ -22,6 +22,10 @@ app.get('/', function (req, res) {
     else res.sendFile(__dirname + '/index.html');
 });
 
+app.get('/favicon.png', function (req, res) {
+    res.sendFile(__dirname + '/favicon.png');
+});
+
 app.post('/login', function (req, res) {
     MongoClient.connect(credentials.host, function (err, client) {
         if (err) res.send(err);
