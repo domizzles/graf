@@ -58,6 +58,7 @@
 
 <script type="text/javascript">
     var session = {};
+    var workouts = [];
 
     $( document ).ready(function() {
         $('#addWorkout').removeAttr('disabled');
@@ -75,6 +76,18 @@
     }
 
     $('#addWorkout').click(function () {
+        $('#addWorkout').attr('disabled', 'true');
+
+        var latestWorkoutDate = moment(_.reduce(_.filter(workouts, function (wo) {return wo.username === session.name}), function(memo, num) {
+            if (memo === 'a') return num;
+            else if (memo.date < num.date) return num;
+            else return memo;
+        }, 'a').date);
+
+        console.log(latestWorkoutDate.date());
+        console.log(moment(new Date()).date());
+        if (latestWorkoutDate.date() === moment(new Date()).date()) return alert('You can only check in once per day.');
+
         $.ajax({
             method: "POST",
             url: '/w',
@@ -139,6 +152,7 @@
                     $.ajax({
                         url: '/w?' + reqquery + '&date=' + moment(Date().toString()).day(offset).hour(22).minute(0).second(0).toDate().toString(),
                         success: function (array) {
+                            workouts = array;
                             array.forEach(function (workout) {
                                 $('#' + workout.username).html($('#' + workout.username).html() + '<h3 style="display: inline-block; color: green;">&nbsp;<span class="glyphicon glyphicon-ok" aria-hidden="true"></span></h3>');
                             });
