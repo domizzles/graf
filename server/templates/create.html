@@ -1,0 +1,24 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <title>Create Account | Graf</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/foundation/5.5.2/css/foundation.min.css">
+</head>
+<body>
+    <div>
+        <div class="panel callout radius" style="margin: 20px auto; width: 600px;">
+            <h1>Graf</h1>
+            <hr>
+            <h2>Create Account</h2>
+            <form method="post" action="/user">
+                <input id="username" class="ember-view ember-text-field radius" placeholder="Username"  type="text" name="username">
+                <input id="password" class="ember-view ember-text-field radius" placeholder="Password" type="password" name="password">
+                <input class="button expand round success" type="submit" value="Create Account">
+                <a class="button expand round secondary" href="/login">Cancel</a>
+            </form>
+        </div>
+    </div>
+</body>
+</html>
