@@ -61,6 +61,8 @@ exports.register = function (server, options, next) {
             handler: function (req, reply) {
                 if (req.auth.isAuthenticated) return reply.redirect('/');
                 if (req.method.toLowerCase() === 'post') {
+                    req.payload.username = req.payload.username.toLowerCase();
+
                     MongoClient.connect(options.credentials.db, function (error, client) {
                         if (error) return reply(error);
 
@@ -309,7 +311,7 @@ exports.register = function (server, options, next) {
             auth: 'session',
             validate: {
                 payload: {
-                    name: Joi.string().lowercase().required()
+                    name: Joi.string().lowercase().trim().required()
                 }
             }
         }
@@ -347,7 +349,7 @@ exports.register = function (server, options, next) {
             },
             validate: {
                 payload: {
-                    username: Joi.string().lowercase().required(),
+                    username: Joi.string().lowercase().trim().required(),
                     password: Joi.string().required()
                 }
             }

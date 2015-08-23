@@ -48,7 +48,7 @@ module.exports = React.createClass({
     },
 
     onChange() {
-        this.getWorkouts();
+        this.getWorkouts().then(this.getTrend);
     },
 
     getWorkouts() {
