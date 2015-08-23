@@ -1,170 +1,19 @@
 <!DOCTYPE html>
 <html>
-<head>
-    <title>graF</title>
-    <link rel="icon" type="image/png" href="./favicon.png">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <script src="http://code.jquery.com/jquery-2.1.3.min.js"></script>
-    <script src="http://maxcdn.bootstrapcdn.com/bootstrap/3.3.4/js/bootstrap.min.js"></script>
-    <script src="http://ajax.cdnjs.com/ajax/libs/underscore.js/1.1.6/underscore-min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.10.2/moment.min.js"></script>
-    <link rel="stylesheet" href="http://maxcdn.bootstrapcdn.com/bootstrap/3.3.4/css/bootstrap.min.css">
-    <link rel="stylesheet" href="./style">
-</head>
-<body>
-<div style="text-align: right;margin-bottom: 0px;">
-    <button id="addUserButton" class="btn btn-primary" style=""><span class="glyphicon glyphicon-user" aria-hidden="true"></span>Add User</button>
-    <form method="post" style="text-align:right; padding: 1% 1% 0 0;display: inline-block;" action="/logout">
-        <input class="btn btn-info" type="submit" value="Log Out">
-    </form>
-</div>
-<div class="row" style="padding-top:2%">
-    <div class="container col-md-3"></div>
-    <div class="container col-md-6" style="margin:auto;">
-        <div class="panel panel-primary">
-            <div class="panel-heading">
-                <h3 class="panel-title">graF</h3>
-            </div>
-            <div style="margin:2%;">
-                <div class="row" style="margin-left:1%;">
-                    <div style="display:inline-block;" class="col-md-3 col-xs-3">
-                        <span class="label label-success" id="groupname"></span>
-                        <span class="label label-info" id="username"></span>
-                    </div>
-                    <div class="col-md-5 col-xs-5">&nbsp;</div>
-                    <div style="display:inline-block; text-align:right;" class="col-md-2 col-xs-2">
-                        <button id="subWorkout" disable="true" type="button" class="btn btn-danger" aria-expanded="false">
-                            <span class="glyphicon glyphicon-minus" aria-hidden="true"></span>
-                        </button>
-                    </div>
-                    <div style="display:inline-block; text-align:right;" class="col-md-1 col-xs-1">
-                        <button id="addWorkout" disable="true" type="button" class="btn btn-primary" aria-expanded="false">
-                            <span class="glyphicon glyphicon-plus" aria-hidden="true"></span>
-                        </button>
-                    </div>
-                </div>
-            </div>
+    <head>
+        <title>Graf</title>
+        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+        <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/font-awesome/4.4.0/css/font-awesome.min.css">
+        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/foundation/5.5.2/css/foundation.min.css">
+        <script type="text/javascript" src="https://code.jquery.com/jquery-2.1.4.min.js"></script>
+    </head>
+    <body>
+        <div id="reactApp"></div>
 
-            <div class="panel panel-default" style="width: 95%;margin-left: auto;margin-right: auto;">
-                <div id="chartDiv" class="panel-body" style="word-wrap: break-word; display: none;">
-                </div>
-                <div id="loadingDiv" style="text-align: center;height: 200px;">
-                    <img src="http://www.mytreedb.com/uploads/mytreedb/loader/ajax_loader_blue_512.gif" style="width: 5%; margin-top: 95px;">
-                </div>
-            </div>
-        </div>
-    </div>
-    <div class="container col-md-3"></div>
-</div>
-
-<script type="text/javascript">
-    var session = {};
-    var workouts = [];
-
-    $( document ).ready(function() {
-        $('#addWorkout').removeAttr('disabled');
-        $('#addUserButton').removeAttr('disabled');
-    });
-
-    function getUrlVars() {
-        var vars = {}, hash;
-        var hashes = window.location.href.slice(window.location.href.indexOf('?') + 1).split('&');
-        for(var i = 0; i < hashes.length; i++) {
-            hash = hashes[i].split('=');
-            vars[hash[0]] = hash[1];
-        }
-        return vars;
-    }
-
-    $('#addWorkout').click(function () {
-        $('#addWorkout').attr('disabled', 'true');
-
-        var latestWorkoutDate = _.reduce(_.filter(workouts, function (wo) {return wo.username === session.name}), function(memo, num) {
-            if (memo === 'a') return num;
-            else if (memo.date < num.date) return num;
-            else return memo;
-        }, 'a').date;
-
-        if (latestWorkoutDate && moment(latestWorkoutDate).date() === moment(new Date()).date()) return alert('You can only check in once per day.');
-
-        $.ajax({
-            method: "POST",
-            url: '/w',
-            data: {
-                username: session.name,
-                date: new Date()
-            },
-            success: function (json) {
-                $('#' + session.name).html($('#' + session.name).html() + '<h3 style="display: inline-block; color: green;">&nbsp;<span class="glyphicon glyphicon-ok" aria-hidden="true"></span></h3>');
-            }
-        });
-    });
-
-    $('#subWorkout').click(function () {
-        $.ajax({
-            method: "DELETE",
-            url: '/w',
-            data: {
-                username: session.name,
-            },
-            success: function (json) {
-                location.reload();
-            }
-        });
-    });
-
-    $('#addUserButton').click(function (e) {
-        var newUser = prompt("Input new user name.");
-        $.ajax({
-            method: "POST",
-            url: '/u',
-            data: {
-                username: newUser.toLowerCase(),
-                group: session.group.toLowerCase()
-            },
-            success: function (json) {
-                if (json.error) alert(newUser + ' ' + json.error);
-                else location.reload();
-            }
-        });
-    });
-
-    $.ajax({
-        url: '/c',
-        success: function (json) {
-            session = json;
-            $('#groupname').text(json.group);
-            $('#username').text(json.name);
-            $.ajax({
-                url: '/u?group=' + session.group,
-                success: function (userList) {
-                    var reqquery = '';
-                    userList.forEach(function (user) {
-                        $('#chartDiv').html($('#chartDiv').html() + '<div id="' + user.username + '"><h3 style="display: inline-block; width: 100px;">' + user.username.charAt(0).toUpperCase() + user.username.substring(1) + '</h3></div><hr>');
-                    });
-                    $('hr').last().remove();
-                    _.pluck(userList, 'username').forEach(function (name) {
-                        reqquery = reqquery + '&username=' + name;
-                    });
-                    reqquery = reqquery.substring(1);
-                    var offset = (moment(Date().toString()) > moment(Date().toString()).day(1)) ? 1 : -6;
-                    $.ajax({
-                        url: '/w?' + reqquery + '&date=' + moment(Date().toString()).day(offset).hour(22).minute(0).second(0).toDate().toString(),
-                        success: function (array) {
-                            workouts = array;
-                            array.forEach(function (workout) {
-                                $('#' + workout.username).html($('#' + workout.username).html() + '<h3 style="display: inline-block; color: green;">&nbsp;<span class="glyphicon glyphicon-ok" aria-hidden="true"></span></h3>');
-                            });
-                            $('#loadingDiv').css('display', 'none');
-                            $('#chartDiv').css('display', 'table');
-                        }
-                    });
-                }
-            });
-        }
-    });
-
-</script>
-
-</body>
+        <script type="text/javascript">
+            USER = $('meta[name=username]').attr('content');
+            HOST = window.location.origin;
+        </script>
+        <script type="text/javascript" src="./index.js"></script>
+    </body>
 </html>

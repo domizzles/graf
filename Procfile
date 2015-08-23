@@ -1,1 +1,1 @@
-web: npm install; node app.js
+web: npm install; npm run bundle; node server/index.js
