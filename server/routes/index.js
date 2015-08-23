@@ -366,6 +366,7 @@ exports.register = function (server, options, next) {
 
                     function getWorkouts (start, end, callback) {
                         grafworkouts.find({
+                            username: req.params.username,
                             date: {
                                 $gte: start,
                                 $lt: end
