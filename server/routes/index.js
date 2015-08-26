@@ -1,6 +1,7 @@
 var async = require('async');
 var Boom = require('boom');
 var cheerio = require('cheerio');
+var crypto = require('crypto');
 var fs = require('fs');
 var Joi = require('joi');
 var moment = require('moment');
@@ -61,15 +62,16 @@ exports.register = function (server, options, next) {
             handler: function (req, reply) {
                 if (req.auth.isAuthenticated) return reply.redirect('/');
                 if (req.method.toLowerCase() === 'post') {
-                    req.payload.username = req.payload.username.toLowerCase();
+                    req.payload.username = req.payload.username.trim().toLowerCase();
 
                     MongoClient.connect(options.credentials.db, function (error, client) {
                         if (error) return reply(error);
 
-                        var password = new Buffer(req.payload.password).toString('base64');
+                        var cipher = crypto.createCipher('aes256', options.credentials.authPassword);
+
                         client.collection('grafusers').findOne({
                             username: req.payload.username,
-                            password: password
+                            password: cipher.update(req.payload.password, 'utf8', 'hex') + cipher.final('hex')
                         }, function (error, user) {
                             client.close();
                             if (error) return reply(error);
@@ -141,38 +143,38 @@ exports.register = function (server, options, next) {
         }
     });
 
-    server.route({
-        method: 'POST',
-        path: '/update-password',
-        config: {
-            handler: function (req, reply) {
-                MongoClient.connect(options.credentials.db, function (error, client) {
-                    if (error) return reply(error);
+    // server.route({
+    //     method: 'POST',
+    //     path: '/update-password',
+    //     config: {
+    //         handler: function (req, reply) {
+    //             MongoClient.connect(options.credentials.db, function (error, client) {
+    //                 if (error) return reply(error);
 
-                    client.collection('grafusers').findOne({
-                        username: req.auth.credentials.username
-                    }, function (error, user) {
-                        if (error) return reply(error);
+    //                 client.collection('grafusers').findOne({
+    //                     username: req.auth.credentials.username
+    //                 }, function (error, user) {
+    //                     if (error) return reply(error);
 
-                        if (user.password === new Buffer(req.payload.current_password).toString('base64')) {
-                            if (req.payload.new_password === req.payload.ver_password) {
-                                users.update({
-                                    username: req.auth.credentials.username
-                                }, {
-                                    $set: {password: new Buffer(req.payload.new_password).toString('base64')}
-                                }, function (error) {
-                                    client.close();
-                                    if (error) return reply(error);
-                                    else return reply({error: false, message: 'Password successfully changed.'});
-                                });
-                            } else return reply(Boom.badRequest('New password and verified password did not match.'));
-                        } else return reply(Boom.unauthorized('Incorrect current password.'));
-                    });
-                });
-            },
-            auth: 'session'
-        }
-    });
+    //                     if (user.password === new Buffer(req.payload.current_password).toString('base64')) {
+    //                         if (req.payload.new_password === req.payload.ver_password) {
+    //                             users.update({
+    //                                 username: req.auth.credentials.username
+    //                             }, {
+    //                                 $set: {password: new Buffer(req.payload.new_password).toString('base64')}
+    //                             }, function (error) {
+    //                                 client.close();
+    //                                 if (error) return reply(error);
+    //                                 else return reply({error: false, message: 'Password successfully changed.'});
+    //                             });
+    //                         } else return reply(Boom.badRequest('New password and verified password did not match.'));
+    //                     } else return reply(Boom.unauthorized('Incorrect current password.'));
+    //                 });
+    //             });
+    //         },
+    //         auth: 'session'
+    //     }
+    // });
 
     server.route({
         method: 'GET',
@@ -326,14 +328,14 @@ exports.register = function (server, options, next) {
                     if (error) return reply(error);
 
                     var grafusers = client.collection('grafusers');
-
+                    var cipher = crypto.createCipher('aes256', options.credentials.authPassword);
                     grafusers.findOne({ username: req.payload.username }, function (error, user) {
                         if (error) return reply(error);
 
                         if (!user) {
                             return grafusers.insert({
                                 username: req.payload.username,
-                                password: new Buffer(req.payload.password).toString('base64')
+                                password: cipher.update(req.payload.password, 'utf8', 'hex') + cipher.final('hex')
                             }, function (error) {
                                 client.close();
                                 if (error) return reply(error);
