@@ -27,7 +27,7 @@ var WorkoutStore = assign({}, EventEmitter.prototype, {
             url: `${HOST}/workout/${USER}`,
             qs: {
                 start_date: moment().startOf('week').toDate(),
-                end_date: moment().toDate()
+                end_date: moment().add(1, 'hour').toDate()
             }
         }).then(workouts => JSON.parse(workouts).data);
     },
