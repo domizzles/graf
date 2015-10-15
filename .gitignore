@@ -1,3 +1,3 @@
 node_modules
-credentials.json
 dist/index.js
+get_history.js

@@ -440,6 +440,6 @@ exports.register = function (server, options, next) {
 };
 
 exports.register.attributes = {
-    name: 'engage-routes',
+    name: 'graf-routes',
     version: require('../../package.json').version
 };
